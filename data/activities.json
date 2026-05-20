@@ -1,0 +1,104 @@
+{
+  "activities": [
+    {
+      "id": "fuerte",
+      "name": "El Fuerte de Samaipata",
+      "description": "Visita guiada al sitio arqueológico UNESCO",
+      "duration": "3 horas",
+      "pricePerPerson": 80,
+      "currency": "BOB",
+      "difficulty": 1,
+      "category": "cultura",
+      "icon": "Landmark"
+    },
+    {
+      "id": "amboro-day",
+      "name": "Amboró: Ruta del Día",
+      "description": "Trekking por la selva nublada con guía naturalista",
+      "duration": "8 horas",
+      "pricePerPerson": 250,
+      "currency": "BOB",
+      "difficulty": 3,
+      "category": "aventura",
+      "icon": "Trees"
+    },
+    {
+      "id": "cascadas",
+      "name": "Circuito de Cascadas",
+      "description": "Pajcha + Las Cuevas. Pozas naturales y rappel opcional",
+      "duration": "5 horas",
+      "pricePerPerson": 150,
+      "currency": "BOB",
+      "difficulty": 2,
+      "category": "aventura",
+      "icon": "Droplets"
+    },
+    {
+      "id": "vinedos",
+      "name": "Ruta de Viñedos",
+      "description": "Degustación en bodegas de altura + almuerzo valluno",
+      "duration": "4 horas",
+      "pricePerPerson": 120,
+      "currency": "BOB",
+      "difficulty": 1,
+      "category": "gastronomia",
+      "icon": "Wine"
+    },
+    {
+      "id": "noche-estrellas",
+      "name": "Noche de Estrellas",
+      "description": "Observación astronómica guiada en mirador de montaña",
+      "duration": "3 horas",
+      "pricePerPerson": 100,
+      "currency": "BOB",
+      "difficulty": 1,
+      "category": "naturaleza",
+      "icon": "Star"
+    },
+    {
+      "id": "cabalgata",
+      "name": "Cabalgata Andina",
+      "description": "Recorrido a caballo por valles y comunidades rurales",
+      "duration": "4 horas",
+      "pricePerPerson": 180,
+      "currency": "BOB",
+      "difficulty": 2,
+      "category": "aventura",
+      "icon": "Compass"
+    },
+    {
+      "id": "cuevas",
+      "name": "Exploración de Cuevas",
+      "description": "Espeleología básica en formaciones calcáreas con guía",
+      "duration": "4 horas",
+      "pricePerPerson": 130,
+      "currency": "BOB",
+      "difficulty": 2,
+      "category": "aventura",
+      "icon": "Mountain"
+    },
+    {
+      "id": "mercado-artesanal",
+      "name": "Tour Gastronómico + Mercado",
+      "description": "Mercado dominical, artesanías y cocina valluna en vivo",
+      "duration": "3 horas",
+      "pricePerPerson": 60,
+      "currency": "BOB",
+      "difficulty": 1,
+      "category": "cultura",
+      "icon": "ShoppingBag"
+    }
+  ],
+  "logistics": {
+    "baseTransportCost": 200,
+    "currency": "BOB",
+    "includes": "Transporte ida/vuelta Santa Cruz - Samaipata"
+  },
+  "discounts": [
+    { "minPeople": 5, "percentage": 10 },
+    { "minPeople": 10, "percentage": 20 }
+  ],
+  "exchangeRate": {
+    "BOBtoUSD": 0.145
+  }
+}
