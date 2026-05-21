@@ -18,6 +18,11 @@ interface DaySlot {
   afternoon: Activity | null
 }
 
+interface SharedTripPayload {
+  d: [string | null, string | null][]
+  p: number
+}
+
 interface TripState {
   days: DaySlot[]
   numberOfPeople: number
@@ -26,6 +31,8 @@ interface TripState {
   setNumberOfPeople: (n: number) => void
   getTotalPrice: () => { subtotal: number; discount: number; logistics: number; total: number; totalUSD: number }
   saveItinerary: () => void
+  getShareUrl: () => string
+  loadFromShared: (encoded: string) => void
 }
 
 export const useTripStore = create<TripState>((set, get) => ({
@@ -85,6 +92,40 @@ export const useTripStore = create<TripState>((set, get) => ({
     const itinerary = { days, numberOfPeople, pricing, savedAt: new Date().toISOString() }
     if (typeof window !== 'undefined') {
       localStorage.setItem('guajojo-itinerary', JSON.stringify(itinerary))
+    }
+  },
+
+  getShareUrl: () => {
+    const { days, numberOfPeople } = get()
+    const payload: SharedTripPayload = {
+      d: days.map((day) => [day.morning?.id ?? null, day.afternoon?.id ?? null]),
+      p: numberOfPeople,
+    }
+    const encoded = encodeURIComponent(JSON.stringify(payload))
+    if (typeof window === 'undefined') return ''
+    const url = new URL(window.location.href)
+    url.searchParams.set('trip', encoded)
+    url.hash = 'constructor'
+    return url.toString()
+  },
+
+  loadFromShared: (encoded: string) => {
+    try {
+      const payload = JSON.parse(decodeURIComponent(encoded)) as SharedTripPayload
+      if (!Array.isArray(payload.d)) return
+      const catalog: Activity[] = activitiesData.activities as Activity[]
+      const findById = (id: string | null) => (id ? (catalog.find((a) => a.id === id) ?? null) : null)
+      const newDays: DaySlot[] = payload.d.slice(0, 3).map(([m, a]) => ({
+        morning: findById(m),
+        afternoon: findById(a),
+      }))
+      while (newDays.length < 3) newDays.push({ morning: null, afternoon: null })
+      set({
+        days: newDays,
+        numberOfPeople: Math.max(1, Math.min(15, payload.p ?? 2)),
+      })
+    } catch {
+      // malformed URL param — silently ignore
     }
   },
 }))

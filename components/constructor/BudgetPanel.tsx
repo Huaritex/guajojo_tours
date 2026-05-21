@@ -1,11 +1,36 @@
 'use client'
 
-import { Users, Save, ChevronDown, ChevronUp } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Users, Save, ChevronDown, ChevronUp, Share2, Printer, Check } from 'lucide-react'
 import { useTripStore } from '@/store/tripStore'
 import activitiesData from '@/data/activities.json'
+import { gsap, useGSAP } from '@/lib/gsap'
 
 export default function BudgetPanel() {
-  const { days, numberOfPeople, setNumberOfPeople, getTotalPrice, saveItinerary } = useTripStore()
+  const { days, numberOfPeople, setNumberOfPeople, getTotalPrice, saveItinerary, getShareUrl } = useTripStore()
+  const [savedFeedback, setSavedFeedback] = useState(false)
+  const [copiedFeedback, setCopiedFeedback] = useState(false)
+  const totalBobRef = useRef<HTMLSpanElement>(null)
+  const totalUsdRef = useRef<HTMLSpanElement>(null)
+  const prevTotalRef = useRef(0)
+
+  function handleSave() {
+    saveItinerary()
+    setSavedFeedback(true)
+    setTimeout(() => setSavedFeedback(false), 2200)
+  }
+
+  function handleShare() {
+    const url = getShareUrl()
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedFeedback(true)
+      setTimeout(() => setCopiedFeedback(false), 2200)
+    })
+  }
+
+  function handlePrint() {
+    window.print()
+  }
   const pricing = getTotalPrice()
 
   const selectedActivities = days.flatMap((d, dayIndex) =>
@@ -18,6 +43,29 @@ export default function BudgetPanel() {
     [...activitiesData.discounts]
       .reverse()
       .find((d) => numberOfPeople >= d.minPeople)?.percentage ?? 0
+
+  // Count-up animation when total changes
+  useGSAP(() => {
+    const target = pricing.total
+    if (target === prevTotalRef.current) return
+    const obj = { val: prevTotalRef.current }
+    gsap.to(obj, {
+      val: target,
+      duration: 0.75,
+      ease: 'power2.out',
+      onUpdate() {
+        if (totalBobRef.current) {
+          totalBobRef.current.textContent = Math.round(obj.val).toLocaleString() + ' BOB'
+        }
+        if (totalUsdRef.current) {
+          totalUsdRef.current.textContent = '≈ $' + (Math.round(obj.val) / 6.96).toFixed(0) + ' USD'
+        }
+      },
+      onComplete() {
+        prevTotalRef.current = target
+      },
+    })
+  }, { dependencies: [pricing.total] })
 
   return (
     <div className="flex flex-col gap-5">
@@ -154,10 +202,10 @@ export default function BudgetPanel() {
               className="font-display text-2xl font-bold"
               style={{ color: 'var(--text-primary)' }}
             >
-              {pricing.total.toLocaleString()} BOB
+              <span ref={totalBobRef}>{pricing.total.toLocaleString()} BOB</span>
             </div>
             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-              ≈ ${pricing.totalUSD.toFixed(0)} USD
+              <span ref={totalUsdRef}>≈ ${pricing.totalUSD.toFixed(0)} USD</span>
             </div>
           </div>
         </div>
@@ -166,20 +214,54 @@ export default function BudgetPanel() {
         </p>
       </div>
 
-      {/* Save button */}
-      <button
-        onClick={saveItinerary}
-        className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200"
-        style={{
-          background: selectedActivities.length > 0 ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.05)',
-          color: selectedActivities.length > 0 ? '#052e16' : 'rgba(255,255,255,0.3)',
-          cursor: selectedActivities.length > 0 ? 'pointer' : 'not-allowed',
-        }}
-        disabled={selectedActivities.length === 0}
-      >
-        <Save size={16} />
-        Guardar itinerario
-      </button>
+      {/* Action buttons */}
+      <div className="flex flex-col gap-2.5">
+        <button
+          onClick={handleSave}
+          className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200"
+          style={{
+            background: selectedActivities.length > 0 ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.05)',
+            color: selectedActivities.length > 0 ? '#052e16' : 'rgba(255,255,255,0.3)',
+            cursor: selectedActivities.length > 0 ? 'pointer' : 'not-allowed',
+          }}
+          disabled={selectedActivities.length === 0}
+        >
+          {savedFeedback ? <Check size={16} /> : <Save size={16} />}
+          {savedFeedback ? '¡Guardado!' : 'Guardar itinerario'}
+        </button>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={handleShare}
+            disabled={selectedActivities.length === 0}
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-200"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              color: selectedActivities.length > 0 ? 'var(--text-primary)' : 'rgba(255,255,255,0.25)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              cursor: selectedActivities.length > 0 ? 'pointer' : 'not-allowed',
+            }}
+          >
+            {copiedFeedback ? <Check size={13} style={{ color: 'var(--accent-emerald)' }} /> : <Share2 size={13} />}
+            {copiedFeedback ? '¡Copiado!' : 'Compartir'}
+          </button>
+
+          <button
+            onClick={handlePrint}
+            disabled={selectedActivities.length === 0}
+            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-200"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              color: selectedActivities.length > 0 ? 'var(--text-primary)' : 'rgba(255,255,255,0.25)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              cursor: selectedActivities.length > 0 ? 'pointer' : 'not-allowed',
+            }}
+          >
+            <Printer size={13} />
+            Imprimir
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

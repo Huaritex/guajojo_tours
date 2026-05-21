@@ -1,15 +1,23 @@
 import Navbar from '@/components/ui/Navbar'
 import HeroSection from '@/components/hero/HeroSection'
+import GuajojoInmersiveHero from '@/components/hero/GuajojoInmersiveHero'
 import ScrollTransition from '@/components/scroll-transition/ScrollTransition'
+import GuajojoActivityGrid from '@/components/activities/GuajojoActivityGrid'
 import WorkspaceLayout from '@/components/constructor/WorkspaceLayout'
+import FAQAccordion from '@/components/ui/FAQAccordion'
+import TripHydrator from '@/components/ui/TripHydrator'
 
 export default function HomePage() {
   return (
     <main>
+      <TripHydrator />
       <Navbar />
       <HeroSection />
+      <GuajojoInmersiveHero />
       <ScrollTransition />
+      <GuajojoActivityGrid />
       <WorkspaceLayout />
+      <FAQAccordion />
 
       <footer
         id="contacto"
