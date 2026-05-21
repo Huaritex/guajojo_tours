@@ -123,6 +123,10 @@ body {
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
+  transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 211, 153, 0.4);
 }
 
 /* ── Selection ── */
@@ -182,69 +186,185 @@ body {
 .badge-gastronomia { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
 .badge-naturaleza { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
 
+/* ── ConstructorNarrative scroll track ── */
+.cn-scroll-track {
+  height: 300vh;
+}
+
+/* Scroll hint chevron */
+.cn-scroll-chevron {
+  width: 10px;
+  height: 10px;
+  border-right: 1.5px solid rgba(52, 211, 153, 0.35);
+  border-bottom: 1.5px solid rgba(52, 211, 153, 0.35);
+  transform: rotate(45deg);
+  animation: cnChevronBounce 1.6s ease-in-out infinite;
+}
+
+@keyframes cnChevronBounce {
+  0%, 100% { opacity: 0.2; transform: rotate(45deg) translateY(0); }
+  50%       { opacity: 0.7; transform: rotate(45deg) translateY(4px); }
+}
+
+/* ── ActivityCard shimmer sweep ── */
+.activity-card-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.activity-card-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.activity-card-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.045) 50%,
+    transparent 100%
+  );
+  transform: translateX(-120%) skewX(-15deg);
+}
+
+.activity-card-wrap:hover .activity-card-shimmer::after {
+  animation: acShimmerSweep 0.55s ease forwards;
+}
+
+@keyframes acShimmerSweep {
+  0%   { transform: translateX(-120%) skewX(-15deg); }
+  100% { transform: translateX(240%)  skewX(-15deg); }
+}
+
+/* ── Custom Scrollytelling Utilities ── */
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.radial-ring {
+  box-shadow: 0 0 40px rgba(52, 211, 153, 0.02);
+}
+
+/* Hide print report on screen */
+#print-report {
+  display: none;
+}
+
 /* ── Print / PDF Export ── */
 @media print {
-  *,
-  *::before,
-  *::after {
-    background: white !important;
-    color: #111 !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+  /* Reset document defaults */
+  html, body, main {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    position: static !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* Hide everything except the constructor section */
-  body > * { display: none !important; }
-  #constructor { display: block !important; }
+  /* Hide grain overlay and other background layers */
+  .grain-overlay {
+    display: none !important;
+  }
 
-  /* Inside the constructor, hide nav/sidebar/scroll UI */
-  #constructor .workspace-label,
-  #constructor [data-radix-popper-content-wrapper],
-  #constructor .activity-catalog-col,
-  #constructor [class*='DragOverlay'],
-  #constructor button { display: none !important; }
+  /* Hide all main sections except the constructor container */
+  main > *:not(#constructor) {
+    display: none !important;
+  }
 
-  /* Show Budget panel cleanly */
-  #constructor .budget-print-section { display: block !important; }
+  /* Hide all constructor children except the print report template */
+  #constructor > *:not(#print-report) {
+    display: none !important;
+  }
+
+  /* Reset constructor styles for print layout */
+  #constructor {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
+  /* Display the print report template */
+  #print-report {
+    display: block !important;
+    background: white !important;
+    color: #1a1a1a !important;
+    visibility: visible !important;
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Accent overrides for clean paper readability */
+  .border-b {
+    border-bottom-width: 1px !important;
+  }
+  .border-gray-100 {
+    border-color: #f3f4f6 !important;
+  }
+  .border-gray-200 {
+    border-color: #e5e7eb !important;
+  }
+  .bg-gray-50 {
+    background-color: #f9fafb !important;
+  }
+  .text-emerald-950 {
+    color: #022c22 !important;
+  }
+  .text-emerald-900 {
+    color: #064e3b !important;
+  }
+  .text-emerald-800 {
+    color: #065f46 !important;
+  }
+  .text-emerald-700 {
+    color: #047857 !important;
+  }
+  .text-emerald-750 {
+    color: #047857 !important;
+  }
+  .text-gray-800 {
+    color: #1f2937 !important;
+  }
+  .text-gray-700 {
+    color: #374151 !important;
+  }
+  .text-gray-600 {
+    color: #4b5563 !important;
+  }
+  .text-gray-500 {
+    color: #6b7280 !important;
+  }
 
   @page {
-    margin: 20mm 15mm;
-    size: A4;
-  }
-
-  .print-header {
-    display: block !important;
-    border-bottom: 2px solid #111;
-    padding-bottom: 8px;
-    margin-bottom: 16px;
-    font-size: 20px;
-    font-weight: 700;
-  }
-
-  .print-row {
-    display: flex !important;
-    justify-content: space-between;
-    border-bottom: 1px solid #ddd;
-    padding: 6px 0;
-    font-size: 13px;
-  }
-
-  .print-total {
-    display: flex !important;
-    justify-content: space-between;
-    padding: 10px 0 0;
-    font-size: 16px;
-    font-weight: 700;
-    border-top: 2px solid #111;
-    margin-top: 8px;
-  }
-
-  .print-footer {
-    display: block !important;
-    margin-top: 24px;
-    font-size: 11px;
-    color: #666 !important;
+    margin: 15mm;
+    size: letter;
   }
 }

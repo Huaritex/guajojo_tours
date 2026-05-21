@@ -12,27 +12,28 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     question: '¿Qué nivel de condición física necesito?',
     answer:
-      'Las actividades están clasificadas en tres niveles de dificultad. Nivel 1 (Suave): apto para cualquier persona sin experiencia previa, incluidos adultos mayores y niños. Nivel 2 (Moderado): requiere buena condición física básica y comodidad al caminar por terrenos irregulares durante 3-5 horas. Nivel 3 (Exigente): requiere experiencia en trekking y excelente condición física. Cada actividad en el planificador muestra su nivel claramente.',
+      'Depende de la ruta. El Fuerte de Samaipata requiere una caminata leve/moderada de acceso. Rutas como Amboró: Ruta del Día o el Circuito de Cascadas exigen una condición física media debido a terrenos irregulares, pendientes y caminatas de hasta 5 a 8 horas en selva húmeda.',
   },
   {
-    question: '¿Cómo me aclimato a la altitud en Samaipata?',
+    question: '¿Cómo me aclimo a la altitud en Samaipata?',
     answer:
-      'Samaipata se encuentra a 1.650 m.s.n.m., una altitud manejable para la mayoría. Si vienes desde el nivel del mar, recomendamos llegar un día antes de iniciar actividades intensas, mantenerte hidratado (al menos 2 litros de agua/día), evitar alcohol las primeras 24 horas y consumir mate de coca si lo deseas. Para el Altiplano (Uyuni, 3.650 m.s.n.m.), el proceso de aclimatación es más importante y te asesoramos con un protocolo específico.',
+      'Samaipata se encuentra a unos 1.600–1.650 metros sobre el nivel del mar, una altitud bastante cómoda. Sin embargo, si planeas ascender hacia zonas altas del Parque Nacional Amboró, te recomendamos hidratarte bien el primer día, evitar comidas pesadas y moderar el esfuerzo físico las primeras horas.',
   },
   {
     question: '¿Cuál es la política de reembolso y cancelación?',
     answer:
-      'Cancelación con más de 72 horas de anticipación: reembolso completo. Entre 24 y 72 horas: reembolso del 50%. Menos de 24 horas o no-show: sin reembolso. En casos de clima extremo que impida la actividad, ofrecemos reprogramación sin costo o reembolso completo según tu preferencia. Para grupos de más de 8 personas aplican condiciones especiales — contáctanos directamente.',
+      'Podés cancelar o modificar tu itinerario sin penalización hasta 48 horas antes del inicio de tu primera actividad programada. Las cancelaciones dentro de las 24 horas previas están sujetas a un cargo del 50% por logística local y reserva de guías nativos.',
   },
   {
     question: '¿Qué equipo debo traer para las actividades?',
     answer:
-      'Lo esencial para cualquier actividad: calzado cómodo de suela antideslizante, protector solar FPS 50+, repelente, agua (al menos 1.5 litros), y ropa en capas (mañanas frescas, tardes calurosas). Para trekking: bastones opcionales y mochila pequeña. Para actividades nocturnas: linterna frontal y ropa térmica. Para cascadas: traje de baño y sandalias acuáticas. El checklist de equipaje personalizado en el planificador se actualiza según tus actividades elegidas.',
+      'Para caminatas y naturaleza, es imprescindible calzado de trekking con buen agarre, rompevientos, repelente de insectos amigable con el ecosistema, protector solar y una mochila pequeña de 15–20 L con agua (mínimo 1.5 L). Si visitás los viñedos, ropa cómoda y casual es suficiente.',
   },
 ]
 
-function FAQRow({ item }: { item: FAQItem }) {
+function FAQRow({ item, index }: { item: FAQItem; index: number }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const chevronRef = useRef<SVGSVGElement>(null)
 
@@ -62,18 +63,48 @@ function FAQRow({ item }: { item: FAQItem }) {
     setIsOpen((prev) => !prev)
   }
 
+  const borderColor = isOpen
+    ? 'rgba(52, 211, 153, 0.2)'
+    : isHovered
+      ? 'rgba(255,255,255,0.1)'
+      : 'rgba(255,255,255,0.05)'
+
   return (
-    <div className="faq-item border-b" style={{ borderColor: 'var(--glass-border)' }}>
+    <div
+      className="faq-item mb-3 rounded-xl"
+      style={{
+        background: isOpen ? 'rgba(255,255,255,0.04)' : isHovered ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.02)',
+        border: `1px solid ${borderColor}`,
+        boxShadow: isOpen ? '0 0 28px rgba(52,211,153,0.06)' : 'none',
+        transition: 'background 0.2s ease, border-color 0.2s ease, box-shadow 0.3s ease',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <button
         type="button"
         onClick={handleToggle}
         aria-expanded={isOpen}
-        className="flex w-full items-center justify-between gap-4 py-5 text-left"
-        style={{ color: 'var(--text-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
+        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+        style={{ background: 'none', border: 'none', cursor: 'pointer' }}
       >
-        <span className="font-sans font-medium text-sm md:text-base leading-snug">
-          {item.question}
-        </span>
+        <div className="flex items-center gap-4 min-w-0">
+          <span
+            className="font-mono text-xs tabular-nums flex-shrink-0"
+            style={{
+              color: isOpen ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)',
+              transition: 'color 0.2s ease',
+            }}
+          >
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <span
+            className="font-sans font-medium text-sm md:text-base leading-snug"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {item.question}
+          </span>
+        </div>
         <svg
           ref={chevronRef}
           width="18"
@@ -81,7 +112,11 @@ function FAQRow({ item }: { item: FAQItem }) {
           viewBox="0 0 18 18"
           fill="none"
           aria-hidden="true"
-          style={{ flexShrink: 0, color: 'var(--accent-emerald)' }}
+          style={{
+            flexShrink: 0,
+            color: isOpen ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.3)',
+            transition: 'color 0.2s ease',
+          }}
         >
           <path
             d="M4.5 6.75 9 11.25l4.5-4.5"
@@ -94,7 +129,10 @@ function FAQRow({ item }: { item: FAQItem }) {
       </button>
 
       <div ref={contentRef} style={{ height: 0, overflow: 'hidden', opacity: 0 }}>
-        <p className="text-sm leading-relaxed pb-5" style={{ color: 'var(--text-secondary)' }}>
+        <p
+          className="text-sm leading-relaxed pb-6 pr-6"
+          style={{ color: 'var(--text-secondary)', paddingLeft: '3.75rem' }}
+        >
           {item.answer}
         </p>
       </div>
@@ -110,13 +148,13 @@ export default function FAQAccordion() {
       const items = gsap.utils.toArray<HTMLElement>('.faq-item')
       gsap.from(items, {
         opacity: 0,
-        y: 16,
-        stagger: 0.07,
-        duration: 0.6,
+        y: 28,
+        stagger: 0.1,
+        duration: 0.65,
         ease: 'power2.out',
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 82%',
+          start: 'top 80%',
           toggleActions: 'play none none none',
         },
       })
@@ -132,7 +170,7 @@ export default function FAQAccordion() {
       style={{ background: 'var(--bg-primary)' }}
     >
       <div className="max-w-3xl mx-auto">
-        <header className="mb-12">
+        <header className="mb-14">
           <p
             className="text-xs font-mono uppercase tracking-[0.3em] mb-4"
             style={{ color: 'var(--accent-emerald)' }}
@@ -150,7 +188,7 @@ export default function FAQAccordion() {
 
         <div>
           {FAQ_ITEMS.map((item, i) => (
-            <FAQRow key={i} item={item} />
+            <FAQRow key={i} item={item} index={i} />
           ))}
         </div>
       </div>

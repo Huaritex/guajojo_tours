@@ -70,7 +70,7 @@ function DropZone({ dayIndex, slot, activity }: DropZoneProps) {
         <div ref={chipRef} className="timeline-chip flex items-center justify-between">
           <div className="flex items-center gap-2">
             {Icon && <Icon size={12} />}
-            <span className="truncate max-w-[110px] text-xs" style={{ color: 'var(--text-primary)' }}>
+            <span className="truncate max-w-[120px] sm:max-w-[240px] lg:max-w-[180px] xl:max-w-[280px] text-xs" style={{ color: 'var(--text-primary)' }}>
               {activity.name}
             </span>
           </div>
@@ -97,15 +97,55 @@ function DropZone({ dayIndex, slot, activity }: DropZoneProps) {
 export default function Timeline() {
   const days = useTripStore((s) => s.days)
 
+  const filledSlots = days.reduce((acc, d) => acc + (d.morning ? 1 : 0) + (d.afternoon ? 1 : 0), 0)
+  const totalSlots = days.length * 2
+  const progress = totalSlots === 0 ? 0 : Math.round((filledSlots / totalSlots) * 100)
+
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h3 className="font-display text-lg mb-0.5" style={{ color: 'var(--text-primary)' }}>
-          Tu itinerario
-        </h3>
-        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+        <div className="flex items-center justify-between mb-0.5">
+          <h3
+            className="font-display text-xl font-semibold tracking-wide text-center flex-1"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Tu itinerario
+          </h3>
+          <span
+            className="text-xs font-mono tabular-nums"
+            style={{
+              color: filledSlots === totalSlots && totalSlots > 0
+                ? 'var(--accent-emerald)'
+                : 'var(--text-secondary)',
+              transition: 'color 0.3s ease',
+            }}
+          >
+            {filledSlots}/{totalSlots}
+          </span>
+        </div>
+        <p className="text-xs text-center" style={{ color: 'var(--text-secondary)' }}>
           3 días · Samaipata
         </p>
+        {/* Progress bar */}
+        <div
+          className="mt-3 w-full rounded-full overflow-hidden"
+          style={{ height: 3, background: 'rgba(255,255,255,0.06)' }}
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="h-full rounded-full"
+            style={{
+              width: `${progress}%`,
+              background: progress === 100
+                ? 'var(--accent-emerald)'
+                : 'linear-gradient(90deg, var(--accent-emerald), rgba(212,165,116,0.7))',
+              transition: 'width 0.5s cubic-bezier(0.16,1,0.3,1)',
+            }}
+          />
+        </div>
       </div>
 
       {/* Vertical timeline */}
@@ -148,7 +188,7 @@ export default function Timeline() {
                 {dayNames[dayIndex]}
               </div>
 
-              <div className="flex flex-col gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <DropZone dayIndex={dayIndex} slot="morning" activity={day.morning} />
                 <DropZone dayIndex={dayIndex} slot="afternoon" activity={day.afternoon} />
               </div>

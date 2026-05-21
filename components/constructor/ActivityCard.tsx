@@ -16,6 +16,13 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; style?: React
 const difficultyLabel = ['', 'Fácil', 'Moderado', 'Desafiante']
 const difficultyColor = ['', 'var(--accent-emerald)', 'var(--accent-amber)', '#f87171']
 
+const categoryAccent: Record<string, string> = {
+  cultura: 'rgba(212,165,116,0.55)',
+  aventura: 'rgba(52,211,153,0.55)',
+  gastronomia: 'rgba(245,158,11,0.55)',
+  naturaleza: 'rgba(96,165,250,0.55)',
+}
+
 interface ActivityCardProps {
   activity: Activity
   compact?: boolean
@@ -35,9 +42,16 @@ export default function ActivityCard({ activity, compact = false }: ActivityCard
   const handleMouseMove = contextSafe((e: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging || !magnetRef.current) return
     const rect = magnetRef.current.getBoundingClientRect()
-    const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.09
-    const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.07
-    gsap.to(magnetRef.current, { x: dx, y: dy, duration: 0.3, ease: 'power2.out' })
+    const dx = e.clientX - (rect.left + rect.width / 2)
+    const dy = e.clientY - (rect.top + rect.height / 2)
+    gsap.to(magnetRef.current, {
+      x: dx * 0.08,
+      y: dy * 0.065,
+      rotateX: (dy / rect.height) * -10,
+      rotateY: (dx / rect.width) * 10,
+      duration: 0.3,
+      ease: 'power2.out',
+    })
   })
 
   const handleMouseEnter = contextSafe(() => {
@@ -49,7 +63,8 @@ export default function ActivityCard({ activity, compact = false }: ActivityCard
 
   const handleMouseLeave = contextSafe(() => {
     gsap.to(magnetRef.current, {
-      x: 0, y: 0, duration: 0.65, ease: 'elastic.out(1, 0.4)',
+      x: 0, y: 0, rotateX: 0, rotateY: 0,
+      duration: 0.65, ease: 'elastic.out(1, 0.4)',
     })
     gsap.to(iconBoxRef.current, {
       scale: 1, rotation: 0, duration: 0.55, ease: 'elastic.out(1, 0.4)',
@@ -64,7 +79,7 @@ export default function ActivityCard({ activity, compact = false }: ActivityCard
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      style={{ willChange: 'transform' }}
+      style={{ willChange: 'transform', perspective: '700px' }}
     >
       <div
         ref={setNodeRef}
@@ -73,13 +88,18 @@ export default function ActivityCard({ activity, compact = false }: ActivityCard
           opacity: isDragging ? 0.3 : 1,
           cursor: isDragging ? 'grabbing' : 'grab',
           zIndex: isDragging ? 999 : undefined,
+          borderLeftColor: categoryAccent[activity.category] ?? 'rgba(52,211,153,0.55)',
+          borderLeftWidth: 2,
+          transformStyle: 'preserve-3d',
         }}
         {...listeners}
         {...attributes}
-        className={`glass-card rounded-xl select-none ${compact ? 'p-3' : 'p-4'}`}
+        className={`glass-card activity-card-wrap rounded-xl select-none ${compact ? 'p-3' : 'p-4'}`}
         role="button"
         aria-label={`Arrastrar: ${activity.name}`}
       >
+        {/* Shimmer sweep overlay */}
+        <span className="activity-card-shimmer" aria-hidden="true" />
         <div className="flex items-start gap-3">
           <div
             ref={iconBoxRef}
@@ -152,3 +172,4 @@ export default function ActivityCard({ activity, compact = false }: ActivityCard
     </div>
   )
 }
+

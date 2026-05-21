@@ -178,7 +178,11 @@ export default function PackingChecklist() {
         />
       </div>
 
-      <div className="flex flex-col gap-5 max-h-72 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
+      <div
+        className="flex flex-col gap-5 max-h-60 overflow-y-auto pr-1"
+        style={{ scrollbarWidth: 'thin' }}
+        data-lenis-prevent
+      >
         {Object.entries(groupedItems).map(([cat, catItems]) => (
           <div key={cat}>
             <p className="text-[10px] font-mono uppercase tracking-[0.15em] mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>

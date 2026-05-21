@@ -14,6 +14,15 @@ export default function BudgetPanel() {
   const totalUsdRef = useRef<HTMLSpanElement>(null)
   const prevTotalRef = useRef(0)
 
+  const saveBtnRef = useRef<HTMLButtonElement>(null)
+  const saveIconRef = useRef<HTMLSpanElement>(null)
+  const shareIconRef = useRef<HTMLSpanElement>(null)
+  const shareRippleRef = useRef<HTMLSpanElement>(null)
+  const printBeamRef = useRef<HTMLDivElement>(null)
+  const saveTl = useRef<gsap.core.Timeline | null>(null)
+  const shareTl = useRef<gsap.core.Timeline | null>(null)
+  const printTl = useRef<gsap.core.Timeline | null>(null)
+
   function handleSave() {
     saveItinerary()
     setSavedFeedback(true)
@@ -67,13 +76,37 @@ export default function BudgetPanel() {
     })
   }, { dependencies: [pricing.total] })
 
+  useGSAP(() => {
+    if (saveBtnRef.current && saveIconRef.current) {
+      saveTl.current = gsap.timeline({ paused: true })
+        .to(saveBtnRef.current, { scale: 1.05, duration: 0.2, ease: 'power2.out' }, 0)
+        .to(saveIconRef.current, { rotationY: 360, transformPerspective: 600, duration: 0.5, ease: 'power2.inOut' }, 0)
+    }
+    if (shareIconRef.current && shareRippleRef.current) {
+      shareTl.current = gsap.timeline({ paused: true })
+        .to(shareIconRef.current, { x: 5, duration: 0.2, ease: 'power2.out' }, 0)
+        .fromTo(shareRippleRef.current,
+          { scale: 0.4, opacity: 0.6 },
+          { scale: 2.8, opacity: 0, duration: 0.55, ease: 'power1.out' },
+          0
+        )
+    }
+    if (printBeamRef.current) {
+      printTl.current = gsap.timeline({ paused: true })
+        .fromTo(printBeamRef.current,
+          { yPercent: -120, opacity: 0.85 },
+          { yPercent: 130, opacity: 0.4, duration: 0.38, ease: 'power1.inOut' }
+        )
+    }
+  })
+
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h3 className="font-display text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
+        <h3 className="font-display text-xl font-semibold tracking-wide text-center mb-1" style={{ color: 'var(--text-primary)' }}>
           Presupuesto
         </h3>
-        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-xs text-center" style={{ color: 'var(--text-secondary)' }}>
           Actualización en tiempo real
         </p>
       </div>
@@ -134,7 +167,11 @@ export default function BudgetPanel() {
       </div>
 
       {/* Activity list */}
-      <div className="flex flex-col gap-2">
+      <div
+        className="flex flex-col gap-2 overflow-y-auto pr-1"
+        style={{ maxHeight: '110px', scrollbarWidth: 'thin' }}
+        data-lenis-prevent
+      >
         {selectedActivities.length === 0 ? (
           <p className="text-xs italic text-center py-4" style={{ color: 'rgba(255,255,255,0.2)' }}>
             Sin actividades seleccionadas
@@ -217,46 +254,85 @@ export default function BudgetPanel() {
       {/* Action buttons */}
       <div className="flex flex-col gap-2.5">
         <button
+          ref={saveBtnRef}
           onClick={handleSave}
-          className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200"
+          onMouseEnter={() => { if (!savedFeedback && selectedActivities.length > 0) saveTl.current?.restart() }}
+          onMouseLeave={() => saveTl.current?.reverse()}
+          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-semibold text-sm transition-colors duration-200"
           style={{
+            minHeight: 52,
             background: selectedActivities.length > 0 ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.05)',
             color: selectedActivities.length > 0 ? '#052e16' : 'rgba(255,255,255,0.3)',
             cursor: selectedActivities.length > 0 ? 'pointer' : 'not-allowed',
+            willChange: 'transform',
           }}
           disabled={selectedActivities.length === 0}
+          suppressHydrationWarning
         >
-          {savedFeedback ? <Check size={16} /> : <Save size={16} />}
+          <span ref={saveIconRef} style={{ display: 'inline-block' }}>
+            {savedFeedback ? <Check size={16} /> : <Save size={16} />}
+          </span>
           {savedFeedback ? '¡Guardado!' : 'Guardar itinerario'}
         </button>
 
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={handleShare}
+            onMouseEnter={() => { if (!copiedFeedback && selectedActivities.length > 0) shareTl.current?.restart() }}
+            onMouseLeave={() => shareTl.current?.reverse()}
             disabled={selectedActivities.length === 0}
-            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-200"
+            suppressHydrationWarning
+            className="relative flex items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-medium transition-colors duration-200"
             style={{
+              minHeight: 48,
               background: 'rgba(255,255,255,0.06)',
               color: selectedActivities.length > 0 ? 'var(--text-primary)' : 'rgba(255,255,255,0.25)',
               border: '1px solid rgba(255,255,255,0.08)',
               cursor: selectedActivities.length > 0 ? 'pointer' : 'not-allowed',
             }}
           >
-            {copiedFeedback ? <Check size={13} style={{ color: 'var(--accent-emerald)' }} /> : <Share2 size={13} />}
+            <span
+              ref={shareRippleRef}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: 36, height: 36,
+                top: '50%', left: '50%',
+                marginTop: -18, marginLeft: -18,
+                border: '1.5px solid var(--accent-emerald)',
+                opacity: 0,
+              }}
+            />
+            <span ref={shareIconRef} style={{ display: 'inline-block', position: 'relative' }}>
+              {copiedFeedback ? <Check size={13} style={{ color: 'var(--accent-emerald)' }} /> : <Share2 size={13} />}
+            </span>
             {copiedFeedback ? '¡Copiado!' : 'Compartir'}
           </button>
 
           <button
             onClick={handlePrint}
+            onMouseEnter={() => { if (selectedActivities.length > 0) printTl.current?.restart() }}
             disabled={selectedActivities.length === 0}
-            className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-200"
+            suppressHydrationWarning
+            className="relative flex items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-medium transition-colors duration-200 overflow-hidden"
             style={{
+              minHeight: 48,
               background: 'rgba(255,255,255,0.06)',
               color: selectedActivities.length > 0 ? 'var(--text-primary)' : 'rgba(255,255,255,0.25)',
               border: '1px solid rgba(255,255,255,0.08)',
               cursor: selectedActivities.length > 0 ? 'pointer' : 'not-allowed',
             }}
           >
+            <div
+              ref={printBeamRef}
+              className="absolute inset-x-0 pointer-events-none"
+              style={{
+                height: 28,
+                top: 0,
+                background: 'linear-gradient(180deg, transparent 0%, rgba(52,211,153,0.4) 50%, transparent 100%)',
+                transform: 'translateY(-120%)',
+                opacity: 0,
+              }}
+            />
             <Printer size={13} />
             Imprimir
           </button>

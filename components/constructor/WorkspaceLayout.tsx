@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, Fragment } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -16,6 +16,8 @@ import Timeline from './Timeline'
 import BudgetPanel from './BudgetPanel'
 import PackingChecklist from './PackingChecklist'
 import ConstructorBackground from './ConstructorBackground'
+import ConstructorNarrative from './ConstructorNarrative'
+import TextRotator from '../ui/TextRotator'
 import { useTripStore, type Activity } from '@/store/tripStore'
 import {
   Landmark, Trees, Droplets, Wine, Star, Compass, Mountain, ShoppingBag,
@@ -46,10 +48,23 @@ function DragPreview({ activity }: { activity: Activity }) {
   )
 }
 
+const ROLES = [
+  "Perfecta",
+  "Única",
+  "Inolvidable",
+  "Épica",
+  "Auténtica",
+  "Mágica",
+  "Legendaria",
+  "Extrema",
+  "Insuperable",
+  "Sin Límites"
+]
+
 const STEPS = [
-  { n: '01', label: 'Explorá', sub: 'Elegí actividades' },
-  { n: '02', label: 'Construí', sub: 'Armá tu itinerario' },
-  { n: '03', label: 'Calculá', sub: 'Presupuesto en vivo' },
+  { label: 'Explorá', hint: 'el catálogo' },
+  { label: 'Arrastrá', hint: 'al itinerario' },
+  { label: 'Guardá', hint: 'y compartí' },
 ]
 
 export default function WorkspaceLayout() {
@@ -57,7 +72,14 @@ export default function WorkspaceLayout() {
   const overlayRef = useRef<HTMLDivElement>(null)
   const beamRef = useRef<HTMLDivElement>(null)
   const addActivity = useTripStore((s) => s.addActivity)
+  const days = useTripStore((s) => s.days)
+  const numberOfPeople = useTripStore((s) => s.numberOfPeople)
+  const getTotalPrice = useTripStore((s) => s.getTotalPrice)
   const [activeActivity, setActiveActivity] = useState<Activity | null>(null)
+
+  const pricing = getTotalPrice()
+  const filledSlots = days.reduce((acc, d) => acc + (d.morning ? 1 : 0) + (d.afternoon ? 1 : 0), 0)
+  const TOTAL_SLOTS = days.length * 2
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -67,7 +89,7 @@ export default function WorkspaceLayout() {
     () => {
       if (!sectionRef.current) return
 
-      // ── Transition curtain: wipes up on scroll, revealing the section ──
+      // ── Transition curtain: wipes up on scroll ──
       if (overlayRef.current) {
         gsap.to(overlayRef.current, {
           scaleY: 0,
@@ -96,26 +118,12 @@ export default function WorkspaceLayout() {
           .to(beamRef.current, { opacity: 0, duration: 0.2 }, '-=0.25')
       }
 
-      // ── Steps entrance ──
-      gsap.from('.c-step', {
-        opacity: 0,
-        y: 14,
-        duration: 0.65,
-        stagger: 0.09,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 72%',
-          once: true,
-        },
-      })
-
-      // ── Heading elements ──
+      // ── Heading elements stagger ──
       gsap.from('.c-heading-el', {
         opacity: 0,
         y: 26,
         duration: 0.9,
-        stagger: 0.13,
+        stagger: 0.11,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -124,28 +132,25 @@ export default function WorkspaceLayout() {
         },
       })
 
-      // ── Panel directional entrances ──
+      // ── Panel directional entrances — unified stagger with scale ──
       const catalog = sectionRef.current.querySelector('.p-catalog')
       const timeline = sectionRef.current.querySelector('.p-timeline')
       const sidebar = sectionRef.current.querySelector('.p-sidebar')
 
-      if (catalog) {
-        gsap.from(catalog, {
-          opacity: 0, x: -50, duration: 1, ease: 'power3.out',
-          scrollTrigger: { trigger: sectionRef.current, start: 'top 62%', once: true },
-        })
-      }
-      if (timeline) {
-        gsap.from(timeline, {
-          opacity: 0, y: 50, duration: 1, delay: 0.08, ease: 'power3.out',
-          scrollTrigger: { trigger: sectionRef.current, start: 'top 62%', once: true },
-        })
-      }
-      if (sidebar) {
-        gsap.from(sidebar, {
-          opacity: 0, x: 50, duration: 1, delay: 0.16, ease: 'power3.out',
-          scrollTrigger: { trigger: sectionRef.current, start: 'top 62%', once: true },
-        })
+      const panelsArr = [catalog, timeline, sidebar].filter(Boolean) as Element[]
+      if (panelsArr.length > 0) {
+        gsap.fromTo(
+          panelsArr,
+          { opacity: 0, y: 36, scale: 0.975 },
+          {
+            opacity: 1, y: 0, scale: 1,
+            duration: 0.88,
+            stagger: 0.1,
+            ease: 'expo.out',
+            clearProps: 'transform',
+            scrollTrigger: { trigger: sectionRef.current, start: 'top 62%', once: true },
+          }
+        )
       }
     },
     { scope: sectionRef },
@@ -170,13 +175,17 @@ export default function WorkspaceLayout() {
     <section
       ref={sectionRef}
       id="constructor"
-      className="relative overflow-hidden"
-      style={{ background: 'var(--bg-primary)', paddingBlock: '5rem 7rem' }}
+      className="relative"
+      style={{ background: 'var(--bg-primary)' }}
     >
-      {/* Three.js ambient background */}
+      {/* Scroll-driven storytelling intro */}
+      <ConstructorNarrative />
+
+      {/* Three.js ambient background — wraps only the workspace grid below */}
+      <div className="relative overflow-hidden" style={{ paddingBlock: '5rem 7rem' }}>
       <ConstructorBackground />
 
-      {/* Transition curtain — green-to-dark panel that wipes upward on scroll */}
+      {/* Transition curtain */}
       <div
         ref={overlayRef}
         className="absolute inset-0 pointer-events-none"
@@ -219,109 +228,242 @@ export default function WorkspaceLayout() {
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-6" style={{ zIndex: 5 }}>
-        {/* Step flow indicators */}
-        <div className="flex items-center justify-center gap-3 md:gap-6 mb-14">
-          {STEPS.map((step, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className="c-step text-center">
-                <p
-                  className="font-mono text-[10px] font-bold mb-1"
-                  style={{ color: 'var(--accent-emerald)', opacity: 0.65 }}
-                >
-                  {step.n}
-                </p>
-                <p
-                  className="text-xs font-semibold"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  {step.label}
-                </p>
-                <p
-                  className="text-[10px] hidden sm:block mt-0.5"
-                  style={{ color: 'var(--text-secondary)' }}
-                >
-                  {step.sub}
-                </p>
-              </div>
-              {i < STEPS.length - 1 && (
-                <div
-                  className="hidden md:flex items-center gap-1 flex-shrink-0 mx-1"
-                  style={{ color: 'var(--glass-border)' }}
-                >
-                  <div className="h-px w-8" style={{ background: 'var(--glass-border)' }} />
-                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>›</span>
-                  <div className="h-px w-8" style={{ background: 'var(--glass-border)' }} />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
+      <div className="relative w-full" style={{ zIndex: 5 }}>
         {/* Section heading */}
-        <div className="text-center mb-14">
+        <div className="w-full flex flex-col items-center justify-center text-center px-4 mt-10 mb-16">
+
+          {/* Section label */}
           <p
-            className="c-heading-el text-xs font-mono uppercase tracking-[0.3em] mb-4"
+            className="c-heading-el text-xs font-mono uppercase tracking-[0.3em] mb-5"
             style={{ color: 'var(--accent-emerald)' }}
           >
-            Constructor de Viajes
+            Constructor de Viaje
           </p>
+
+          {/* Main title */}
           <h2
-            className="c-heading-el font-display"
+            className="c-heading-el font-display w-full flex flex-row flex-wrap items-center justify-center content-center text-center gap-x-3 mx-auto"
             style={{
               fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)',
               color: 'var(--text-primary)',
               lineHeight: 1.1,
             }}
           >
-            Diseñá tu aventura{' '}
-            <span style={{ color: 'var(--accent-gold)' }}>perfecta</span>
+            <span>Diseñá tu aventura</span>
+            <TextRotator words={ROLES} />
           </h2>
-          <p
-            className="c-heading-el mt-4 max-w-md mx-auto text-sm"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            Arrastrá actividades al calendario · el presupuesto se actualiza al instante
-          </p>
+
+          {/* Step guide */}
+          <div className="c-heading-el mt-7 flex items-center justify-center gap-2 flex-wrap">
+            {STEPS.map(({ label, hint }, i) => (
+              <Fragment key={label}>
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                  }}
+                >
+                  <span
+                    className="font-mono text-[10px] font-semibold tabular-nums"
+                    style={{ color: 'var(--accent-emerald)' }}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                    {label}
+                  </span>
+                  <span className="text-[10px] hidden sm:inline" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                    {hint}
+                  </span>
+                </div>
+                {i < STEPS.length - 1 && (
+                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.12)' }}>→</span>
+                )}
+              </Fragment>
+            ))}
+          </div>
+
+          {/* Progress badge */}
+          <div className="c-heading-el mt-5">
+            <span
+              className="inline-flex items-center gap-2 text-xs font-mono tabular-nums px-4 py-1.5 rounded-full"
+              style={{
+                background: filledSlots > 0 ? 'rgba(52,211,153,0.07)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${filledSlots > 0 ? 'rgba(52,211,153,0.18)' : 'rgba(255,255,255,0.06)'}`,
+                color: filledSlots > 0 ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.22)',
+                transition: 'color 0.35s ease, border-color 0.35s ease, background 0.35s ease',
+              }}
+            >
+              {filledSlots > 0 && (
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: 'var(--accent-emerald)' }}
+                />
+              )}
+              {filledSlots === 0
+                ? 'Comenzá a armar tu viaje'
+                : `${filledSlots} / ${TOTAL_SLOTS} actividades en tu itinerario`}
+            </span>
+          </div>
         </div>
 
         {/* Workspace */}
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr_1fr] gap-5 items-start">
-            {/* Catalog */}
-            <div className="p-catalog glass-card rounded-2xl p-5" style={{ minHeight: 540 }}>
-              <ActivityCatalog />
-            </div>
+        <div className="w-full px-12 md:px-16 lg:px-20 mx-auto">
+          <DndContext id="constructor-dnd" sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            <div className="grid grid-cols-12 gap-6 w-full items-start">
 
-            {/* Timeline — center, elevated visual treatment */}
-            <div
-              className="p-timeline rounded-2xl p-6"
-              style={{
-                minHeight: 540,
-                background: 'rgba(255,255,255,0.035)',
-                backdropFilter: 'blur(18px) saturate(1.5)',
-                WebkitBackdropFilter: 'blur(18px) saturate(1.5)',
-                border: '1px solid rgba(52, 211, 153, 0.18)',
-                boxShadow:
-                  '0 0 60px rgba(52,211,153,0.05), 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(52,211,153,0.08)',
-              }}
-            >
-              <Timeline />
-            </div>
-
-            {/* Budget + Packing */}
-            <div className="p-sidebar lg:sticky lg:top-24 flex flex-col gap-4">
-              <div className="glass-card rounded-2xl p-5">
-                <BudgetPanel />
+              {/* Catalog */}
+              <div
+                className="p-catalog rounded-2xl p-5 w-full col-span-12 lg:col-span-3 max-w-md md:max-w-xl lg:max-w-none mx-auto lg:mx-0"
+                style={{
+                  minHeight: 540,
+                  background: 'rgba(255,255,255,0.024)',
+                  backdropFilter: 'blur(14px) saturate(1.4)',
+                  WebkitBackdropFilter: 'blur(14px) saturate(1.4)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  boxShadow: '0 4px 28px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05)',
+                }}
+              >
+                <ActivityCatalog />
               </div>
-              <PackingChecklist />
+
+              {/* Timeline — center, elevated visual treatment */}
+              <div
+                className="p-timeline rounded-2xl p-6 w-full col-span-12 lg:col-span-6 max-w-md md:max-w-xl lg:max-w-none mx-auto lg:mx-0"
+                style={{
+                  minHeight: 540,
+                  background: 'rgba(255,255,255,0.035)',
+                  backdropFilter: 'blur(18px) saturate(1.5)',
+                  WebkitBackdropFilter: 'blur(18px) saturate(1.5)',
+                  border: '1px solid rgba(52, 211, 153, 0.18)',
+                  boxShadow:
+                    '0 0 60px rgba(52,211,153,0.05), 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(52,211,153,0.08)',
+                }}
+              >
+                <Timeline />
+              </div>
+
+              {/* Budget + Packing */}
+              <div className="p-sidebar lg:sticky lg:top-24 flex flex-col gap-4 w-full col-span-12 lg:col-span-3 max-w-md md:max-w-xl lg:max-w-none mx-auto lg:mx-0">
+                <div className="glass-card rounded-2xl p-5">
+                  <BudgetPanel />
+                </div>
+                <PackingChecklist />
+              </div>
+            </div>
+
+            <DragOverlay>
+              {activeActivity && <DragPreview activity={activeActivity} />}
+            </DragOverlay>
+          </DndContext>
+        </div>
+      </div>
+      </div>{/* /relative overflow-hidden workspace wrapper */}
+
+      {/* Print Report Template */}
+      <div id="print-report" className="w-full max-w-4xl mx-auto p-12 bg-white text-[#1a1a1a] font-sans">
+        {/* Cabecera */}
+        <div className="border-b-2 border-emerald-850 pb-6 mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-emerald-950 font-display">
+              Guajojó Tours
+            </h1>
+            <p className="text-sm font-semibold text-emerald-800 uppercase tracking-widest mt-1">
+              Tu Itinerario de Viaje
+            </p>
+          </div>
+          <div className="text-right text-xs text-gray-500 space-y-1">
+            <p><strong className="text-gray-700">Destino:</strong> Samaipata, Bolivia</p>
+            <p><strong className="text-gray-700">Viajeros:</strong> {numberOfPeople} {numberOfPeople === 1 ? 'persona' : 'personas'}</p>
+            <p><strong className="text-gray-700">Fecha:</strong> {new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          </div>
+        </div>
+
+        {/* Itinerario */}
+        <div className="space-y-8 mb-12">
+          <h2 className="text-xl font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">
+            Itinerario Diario
+          </h2>
+          {days.map((day, dayIdx) => {
+            const hasActivities = day.morning || day.afternoon
+            return (
+              <div key={dayIdx} className="border-b border-gray-100 pb-6 last:border-b-0 last:pb-0" style={{ breakInside: 'avoid' }}>
+                <h3 className="font-semibold text-emerald-900 text-lg mb-3 font-display">
+                  Día {dayIdx + 1}
+                </h3>
+                {!hasActivities ? (
+                  <p className="text-sm text-gray-400 italic">No hay actividades planificadas para este día.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {day.morning && (
+                      <div className="flex gap-4 items-start">
+                        <span className="text-xs font-semibold uppercase text-emerald-700 w-16 pt-0.5">Mañana</span>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm text-gray-800">{day.morning.name}</h4>
+                          <p className="text-xs text-gray-600 mt-1">{day.morning.description}</p>
+                          <div className="flex gap-4 mt-1.5 text-[11px] text-gray-500">
+                            <span>Duración: {day.morning.duration}</span>
+                            <span>Precio: {day.morning.pricePerPerson} BOB / pers.</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {day.afternoon && (
+                      <div className="flex gap-4 items-start">
+                        <span className="text-xs font-semibold uppercase text-emerald-700 w-16 pt-0.5">Tarde</span>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm text-gray-800">{day.afternoon.name}</h4>
+                          <p className="text-xs text-gray-600 mt-1">{day.afternoon.description}</p>
+                          <div className="flex gap-4 mt-1.5 text-[11px] text-gray-500">
+                            <span>Duración: {day.afternoon.duration}</span>
+                            <span>Precio: {day.afternoon.pricePerPerson} BOB / pers.</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Presupuesto */}
+        <div className="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-200" style={{ breakInside: 'avoid' }}>
+          <h2 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">
+            Resumen de Presupuesto
+          </h2>
+          <div className="space-y-2 text-sm text-gray-600">
+            <div className="flex justify-between">
+              <span>Subtotal Actividades ({numberOfPeople} {numberOfPeople === 1 ? 'viajero' : 'viajeros'})</span>
+              <span className="font-medium text-gray-900">{pricing.subtotal.toLocaleString()} BOB</span>
+            </div>
+            {pricing.discount > 0 && (
+              <div className="flex justify-between text-emerald-750">
+                <span>Descuento Aplicado ({pricing.discount > 0 ? (pricing.discount / pricing.subtotal * 100).toFixed(0) : 0}%)</span>
+                <span className="font-medium">- {pricing.discount.toLocaleString()} BOB</span>
+              </div>
+            )}
+            <div className="flex justify-between pb-3 border-b border-gray-200">
+              <span>Logística y Transporte base</span>
+              <span className="font-medium text-gray-900">{pricing.logistics.toLocaleString()} BOB</span>
+            </div>
+            <div className="flex justify-between items-baseline pt-3">
+              <span className="text-base font-bold text-gray-900">Total Estimado</span>
+              <div className="text-right">
+                <span className="text-xl font-bold text-emerald-950">{pricing.total.toLocaleString()} BOB</span>
+                <p className="text-xs text-gray-500 mt-0.5">≈ ${(pricing.total / 6.96).toFixed(0)} USD</p>
+              </div>
             </div>
           </div>
+        </div>
 
-          <DragOverlay>
-            {activeActivity && <DragPreview activity={activeActivity} />}
-          </DragOverlay>
-        </DndContext>
+        {/* Footer */}
+        <div className="mt-12 pt-6 border-t border-gray-200 text-center text-xs text-gray-400">
+          <p>Guajojó Tours · Samaipata, Santa Cruz, Bolivia · info@guajojotours.bo</p>
+          <p className="mt-1">Generado automáticamente el {new Date().toLocaleDateString('es-ES')}</p>
+        </div>
       </div>
     </section>
   )
