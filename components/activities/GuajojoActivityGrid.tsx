@@ -156,8 +156,22 @@ export default function GuajojoActivityGrid() {
       if (cards.length === 0) return
 
       // Initial layout settings for step cards
-      gsap.set(cards.slice(1), { opacity: 0, y: 50, filter: 'blur(10px)', pointerEvents: 'none' })
-      gsap.set(cards[0], { opacity: 1, y: 0, filter: 'blur(0px)', pointerEvents: 'auto' })
+      gsap.set(cards.slice(1), { 
+        opacity: 0, 
+        y: 60, 
+        scale: 0.92, 
+        rotateZ: 2, 
+        rotateY: 8, 
+        pointerEvents: 'none' 
+      })
+      gsap.set(cards[0], { 
+        opacity: 1, 
+        y: 0, 
+        scale: 1, 
+        rotateZ: 0, 
+        rotateY: 0, 
+        pointerEvents: 'auto' 
+      })
 
       // Main GSAP Timeline bound to scroll port
       const tl = gsap.timeline({
@@ -169,45 +183,49 @@ export default function GuajojoActivityGrid() {
         },
       })
 
-      // Interpolate the 3D particles val from 0 to 5 over scrollport
-      tl.to(
-        scrollProgress.current,
-        {
-          val: 5,
-          ease: 'none',
-          duration: 5,
-        },
-        0
-      )
-
       // Animate step cards & step indicator dots
       const stepDuration = 1
       for (let i = 0; i < 5; i++) {
         const start = i * stepDuration
 
-        // Card Fade Out
+        // Card Fade Out (starts slightly earlier for natural stagger)
         tl.to(
           cards[i],
           {
             opacity: 0,
-            y: -50,
-            filter: 'blur(10px)',
+            y: -60,
+            scale: 0.92,
+            rotateZ: -2,
+            rotateY: -8,
             pointerEvents: 'none',
-            duration: 0.45,
+            duration: 0.40,
             ease: 'power2.inOut',
           },
-          start + 0.1
+          start + 0.55
         )
 
-        // Card Fade In
+        // Card Fade In (starts slightly later for organic overlay flow)
         tl.to(
           cards[i + 1],
           {
             opacity: 1,
             y: 0,
-            filter: 'blur(0px)',
+            scale: 1,
+            rotateZ: 0,
+            rotateY: 0,
             pointerEvents: 'auto',
-            duration: 0.45,
+            duration: 0.40,
+            ease: 'power2.inOut',
+          },
+          start + 0.60
+        )
+
+        // Tween particle val value dynamically in sync with transition
+        tl.to(
+          scrollProgress.current,
+          {
+            val: i + 1,
+            duration: 0.40,
             ease: 'power2.inOut',
           },
           start + 0.55
@@ -219,7 +237,7 @@ export default function GuajojoActivityGrid() {
             setActiveIndex(i + 1)
           },
           [],
-          start + 0.5
+          start + 0.75
         )
 
         // Reset to previous state if scrolling back
@@ -228,7 +246,7 @@ export default function GuajojoActivityGrid() {
             setActiveIndex(i)
           },
           [],
-          start + 0.1
+          start + 0.25
         )
 
         // Inactive progress dot
@@ -237,9 +255,9 @@ export default function GuajojoActivityGrid() {
           {
             backgroundColor: '#44403c', // stone-700
             scale: 1,
-            duration: 0.3,
+            duration: 0.40,
           },
-          start + 0.2
+          start + 0.55
         )
 
         // Active progress dot
@@ -248,9 +266,9 @@ export default function GuajojoActivityGrid() {
           {
             backgroundColor: '#34d399', // emerald-400
             scale: 1.35,
-            duration: 0.3,
+            duration: 0.40,
           },
-          start + 0.45
+          start + 0.55
         )
       }
     }, sectionRef)
@@ -340,8 +358,9 @@ export default function GuajojoActivityGrid() {
     const scrollTop = window.scrollY || document.documentElement.scrollTop
     const sectionTop = rect.top + scrollTop
     const sectionHeight = rect.height
-    // Divide section scroll height into 6 steps
-    const stepHeight = sectionHeight / 6
+    // Calculate exact scroll increment based on scrollable range
+    const scrollRange = sectionHeight - window.innerHeight
+    const stepHeight = scrollRange / 5
     window.scrollTo({
       top: sectionTop + stepHeight * idx + 10,
       behavior: 'smooth',
@@ -349,7 +368,7 @@ export default function GuajojoActivityGrid() {
   }
 
   return (
-    <div ref={sectionRef} id="actividades" className="relative h-[600vh] bg-stone-950 overflow-visible">
+    <div ref={sectionRef} id="actividades" className="relative h-[1000vh] bg-stone-950 overflow-visible">
       {/* Sticky Inner Viewport */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col md:flex-row bg-[#020503]">
         {/* Background Overlay Glows */}
@@ -404,7 +423,7 @@ export default function GuajojoActivityGrid() {
 
         {/* 2. Right Side: Card Narratives overlay */}
         <div className="w-full md:w-[55%] h-[64vh] md:h-full flex items-center justify-center p-4 md:p-12 relative bg-stone-950/15 z-10">
-          <div className="relative w-full max-w-md h-[380px] md:h-[450px] flex items-center justify-center">
+          <div className="relative w-full max-w-md h-[380px] md:h-[450px] flex items-center justify-center" style={{ perspective: '1200px' }}>
             {ACTIVITIES.map((activity, i) => (
               <article
                 key={activity.id}

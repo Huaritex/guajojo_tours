@@ -2,6 +2,7 @@
 
 import { useRef } from 'react'
 import { gsap, useGSAP } from '@/lib/gsap'
+import { ArrowRight } from 'lucide-react'
 
 function splitChars(text: string) {
   return text.split('').map((char, i) => (
@@ -21,6 +22,76 @@ interface HeroTextProps {
 
 export default function HeroText({ onComplete }: HeroTextProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const glowRef = useRef<HTMLSpanElement>(null)
+
+  // Spotlight & magnetic hover effects using GSAP
+  const handleMouseEnter = () => {
+    gsap.to(glowRef.current, {
+      opacity: 1,
+      duration: 0.35,
+      ease: 'power2.out',
+    })
+    gsap.to(buttonRef.current, {
+      scale: 1.05,
+      borderColor: 'rgba(52, 211, 153, 0.6)',
+      boxShadow: '0 0 50px rgba(52, 211, 153, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+      backgroundColor: 'rgba(4, 47, 22, 0.6)',
+      color: '#fafaf9',
+      duration: 0.3,
+      ease: 'power2.out',
+    })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const btn = buttonRef.current
+    const glow = glowRef.current
+    if (!btn || !glow) return
+
+    const rect = btn.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+
+    // Center the spotlight on cursor coordinates
+    gsap.to(glow, {
+      left: x,
+      top: y,
+      duration: 0.15,
+      ease: 'power2.out',
+    })
+
+    // Magnet effect: subtle translation towards cursor
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    const deltaX = x - centerX
+    const deltaY = y - centerY
+
+    gsap.to(btn, {
+      x: deltaX * 0.12,
+      y: deltaY * 0.2,
+      duration: 0.25,
+      ease: 'power2.out',
+    })
+  }
+
+  const handleMouseLeave = () => {
+    gsap.to(glowRef.current, {
+      opacity: 0,
+      duration: 0.4,
+      ease: 'power2.out',
+    })
+    gsap.to(buttonRef.current, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      borderColor: 'rgba(52, 211, 153, 0.25)',
+      boxShadow: '0 0 30px rgba(52, 211, 153, 0.12)',
+      backgroundColor: 'rgba(5, 46, 22, 0.3)',
+      color: 'rgba(250, 250, 249, 0.85)',
+      duration: 0.65,
+      ease: 'elastic.out(1.1, 0.5)',
+    })
+  }
 
   useGSAP(() => {
     if (!containerRef.current) return
@@ -88,7 +159,6 @@ export default function HeroText({ onComplete }: HeroTextProps) {
       ref={containerRef}
       className="relative z-10 flex flex-col items-center text-center px-6 max-w-5xl mx-auto"
     >
-      <div className="section-label mb-6">Samaipata · Bolivia · 1,650 msnm</div>
 
       <h1
         className="font-display leading-none tracking-tight mb-4"
@@ -118,26 +188,64 @@ export default function HeroText({ onComplete }: HeroTextProps) {
       </p>
 
       <button
-        className="hero-cta mt-10 group flex items-center gap-3 px-8 py-4 rounded-2xl font-semibold text-base transition-all duration-300"
+        ref={buttonRef}
+        className="hero-cta mt-24 md:mt-28 relative overflow-hidden group flex items-center gap-3 px-9 py-4.5 rounded-2xl font-semibold text-base border backdrop-blur-md transition-shadow duration-300 select-none cursor-pointer"
         style={{
-          background: 'var(--accent-emerald)',
-          color: '#052e16',
-          boxShadow: '0 0 40px rgba(52, 211, 153, 0.25)',
+          borderColor: 'rgba(52, 211, 153, 0.25)',
+          backgroundColor: 'rgba(5, 46, 22, 0.3)',
+          color: 'rgba(250, 250, 249, 0.85)',
+          boxShadow: '0 0 30px rgba(52, 211, 153, 0.12)',
         }}
         onClick={scrollToConstructor}
-        onMouseEnter={(e) => {
-          ;(e.currentTarget as HTMLElement).style.boxShadow =
-            '0 0 60px rgba(52, 211, 153, 0.4)'
-          ;(e.currentTarget as HTMLElement).style.transform = 'scale(1.03)'
-        }}
-        onMouseLeave={(e) => {
-          ;(e.currentTarget as HTMLElement).style.boxShadow =
-            '0 0 40px rgba(52, 211, 153, 0.25)'
-          ;(e.currentTarget as HTMLElement).style.transform = 'scale(1)'
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
-        Diseñá tu viaje
-        <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+        {/* Spotlight cursor glow */}
+        <span
+          ref={glowRef}
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            width: '200px',
+            height: '200px',
+            background: 'radial-gradient(circle, rgba(52, 211, 153, 0.3) 0%, transparent 70%)',
+            left: '0px',
+            top: '0px',
+            transform: 'translate(-50%, -50%)',
+            opacity: 0,
+            willChange: 'transform, opacity',
+          }}
+        />
+
+        {/* Shimmer sweep animation overlay */}
+        <span
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.1) 40%, rgba(52, 211, 153, 0.25) 50%, rgba(52, 211, 153, 0.1) 60%, transparent)',
+            width: '200%',
+            height: '100%',
+            left: '-100%',
+            top: '0',
+            opacity: 0.4,
+            animation: 'shimmerSweep 4s infinite linear',
+          }}
+        />
+
+        <style>{`
+          @keyframes shimmerSweep {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(100%); }
+          }
+        `}</style>
+
+        <span className="relative z-10 flex items-center gap-3">
+          Diseñá tu viaje
+          <ArrowRight
+            size={18}
+            className="transition-transform duration-300 group-hover:translate-x-1.5"
+            style={{ color: 'var(--accent-gold)' }}
+          />
+        </span>
       </button>
 
       <div className="mt-16 flex items-center gap-2 animate-bounce" style={{ color: 'var(--text-secondary)', opacity: 0.5 }}>
