@@ -245,6 +245,79 @@ body {
   100% { transform: translateX(240%)  skewX(-15deg); }
 }
 
+/* ── Floating Phase Cards ── */
+.cn-phase-float {
+  animation: cnPhaseFloat 6.5s ease-in-out infinite alternate;
+}
+
+.cn-phase-float-delayed {
+  animation: cnPhaseFloatDelay 8s ease-in-out infinite alternate;
+}
+
+@keyframes cnPhaseFloat {
+  0% {
+    transform: translateY(0px) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(-0.5deg);
+  }
+  100% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+}
+
+@keyframes cnPhaseFloatDelay {
+  0% {
+    transform: translateY(0px) rotate(1.8deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.8deg);
+  }
+  100% {
+    transform: translateY(-14px) rotate(-0.8deg);
+  }
+}
+
+/* ── Premium Phase Card Styling ── */
+.cn-premium-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(10, 10, 10, 0.72) !important;
+  backdrop-filter: blur(24px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.6) !important;
+  border: 1px solid var(--card-border-color) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 45px var(--card-glow-color) !important;
+  border-radius: 18px;
+  padding: 18px 20px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.cn-premium-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.cn-premium-card:hover {
+  transform: scale(1.045) translateY(-5px);
+  border-color: var(--card-accent-color) !important;
+  box-shadow: 
+    0 16px 48px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 50px var(--card-glow-active) !important;
+}
+
 /* ── Custom Scrollytelling Utilities ── */
 .vertical-text {
   writing-mode: vertical-rl;

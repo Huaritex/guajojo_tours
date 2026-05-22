@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, Fragment } from 'react'
 import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap'
 
 // ─────────────────────────────────────────────────────────
@@ -116,24 +116,16 @@ const PHASE_CARDS: PhaseCard[][] = [
   ],
 ]
 
-function CardMockup({ card, tilt = 0 }: { card: PhaseCard; tilt?: number }) {
+function CardMockup({ card }: { card: PhaseCard }) {
   return (
     <div
+      className="cn-premium-card"
       style={{
-        background: 'rgba(8, 8, 8, 0.88)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        border: `1px solid ${card.accent}35`,
-        borderRadius: 18,
-        padding: '16px 18px',
-        boxShadow: [
-          '0 8px 40px rgba(0,0,0,0.55)',
-          `0 0 0 1px ${card.accent}10`,
-          'inset 0 1px 0 rgba(255,255,255,0.06)',
-          `0 0 60px ${card.accent}08`,
-        ].join(', '),
-        transform: `rotate(${tilt}deg)`,
-      }}
+        '--card-accent-color': card.accent,
+        '--card-border-color': `${card.accent}30`,
+        '--card-glow-color': `${card.accent}08`,
+        '--card-glow-active': `${card.accent}20`,
+      } as React.CSSProperties}
     >
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
@@ -277,7 +269,8 @@ export default function ConstructorNarrative() {
       const allGroups = cardGroupRefs.current.filter(Boolean) as HTMLDivElement[]
       gsap.set(allGroups, { opacity: 0, x: 55 })
 
-      // Float animation for card inner elements (independent of scroll)
+      // Float animation handled by cn-phase-float CSS keyframes to prevent GSAP conflicts
+      /*
       cardFloatRefs.current.forEach((group, gi) => {
         group.forEach((el, ci) => {
           if (!el) return
@@ -291,6 +284,7 @@ export default function ConstructorNarrative() {
           })
         })
       })
+      */
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -670,6 +664,7 @@ export default function ConstructorNarrative() {
             style={{
               right: '5%',
               width: 'min(27vw, 275px)',
+              height: 380,
             }}
           >
             {/* Ambient glow behind cards */}
@@ -686,42 +681,34 @@ export default function ConstructorNarrative() {
               <div
                 key={groupIdx}
                 ref={el => { cardGroupRefs.current[groupIdx] = el }}
-                className="absolute inset-0 flex flex-col gap-4"
+                className="absolute inset-0 flex flex-col justify-center"
                 style={{ willChange: 'opacity, transform' }}
               >
                 {group.map((card, cardIdx) => (
-                  /* Rotation wrapper (static) */
-                  <div
-                    key={cardIdx}
-                    style={{
-                      transform: `rotate(${cardIdx === 0 ? -1.5 : 1.8}deg)`,
-                      marginTop: cardIdx === 1 ? 6 : 0,
-                    }}
-                  >
-                    {/* Float wrapper (GSAP y-tween target) */}
+                  <Fragment key={cardIdx}>
+                    {cardIdx > 0 && (
+                      <div
+                        className="w-px pointer-events-none"
+                        style={{
+                          marginLeft: 38,
+                          height: 18,
+                          background: `linear-gradient(to bottom, ${group[0].accent}50, ${group[1]?.accent ?? group[0].accent}15)`,
+                        }}
+                      />
+                    )}
+                    {/* Float wrapper (CSS animated) */}
                     <div
                       ref={el => {
                         if (!cardFloatRefs.current[groupIdx]) cardFloatRefs.current[groupIdx] = []
                         cardFloatRefs.current[groupIdx][cardIdx] = el
                       }}
+                      className={cardIdx === 0 ? 'cn-phase-float' : 'cn-phase-float-delayed'}
                       style={{ willChange: 'transform' }}
                     >
                       <CardMockup card={card} />
                     </div>
-                  </div>
+                  </Fragment>
                 ))}
-
-                {/* Connector line between cards */}
-                <div
-                  className="absolute pointer-events-none"
-                  style={{
-                    left: 24,
-                    top: 82,
-                    width: 1,
-                    height: 36,
-                    background: `linear-gradient(to bottom, ${group[0].accent}40, ${group[1]?.accent ?? group[0].accent}20)`,
-                  }}
-                />
               </div>
             ))}
 
