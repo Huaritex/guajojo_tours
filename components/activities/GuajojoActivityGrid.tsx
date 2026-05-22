@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { gsap } from '@/lib/gsap'
 import { useTripStore, Activity as StoreActivity } from '@/store/tripStore'
 import activitiesData from '@/data/activities.json'
-import { Check, Calendar, MapPin, Clock, ArrowRight } from 'lucide-react'
+import { Check, MapPin, Clock, ArrowRight } from 'lucide-react'
 
 // Dynamic import of R3F Canvas to prevent SSR hydration warnings
 const ActivityParticlesCanvas = dynamic(() => import('./ActivityParticlesCanvas'), { ssr: false })
@@ -382,17 +382,6 @@ export default function GuajojoActivityGrid() {
             Storytelling Interactivo
           </h2>
         </header>
-
-        {/* Planner Navigation HUD */}
-        <div className="absolute top-6 right-6 md:right-12 z-30 flex items-center gap-4">
-          <button
-            onClick={scrollToConstructor}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-mono uppercase tracking-wider text-emerald-400 border border-emerald-500/20 bg-emerald-950/20 backdrop-blur-md hover:bg-emerald-500/10 transition-all duration-300 cursor-pointer"
-          >
-            <Calendar size={12} />
-            Ir al Planificador
-          </button>
-        </div>
 
         {/* 1. Left Side: WebGL Particle Visualizer */}
         <div className="w-full md:w-[45%] h-[36vh] md:h-full relative border-b md:border-b-0 md:border-r border-stone-900 bg-stone-950/30 flex flex-col justify-center items-center z-10">
