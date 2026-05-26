@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, Fragment } from 'react'
+import dynamic from 'next/dynamic'
 import {
   DndContext,
   DragOverlay,
@@ -14,6 +15,7 @@ import { gsap, useGSAP } from '@/lib/gsap'
 import ActivityCatalog from './ActivityCatalog'
 import Timeline from './Timeline'
 import BudgetPanel from './BudgetPanel'
+import LogisticsAlerts from './LogisticsAlerts'
 import PackingChecklist from './PackingChecklist'
 import ConstructorBackground from './ConstructorBackground'
 import ConstructorNarrative from './ConstructorNarrative'
@@ -22,6 +24,9 @@ import { useTripStore, type Activity } from '@/store/tripStore'
 import {
   Landmark, Trees, Droplets, Wine, Star, Compass, Mountain, ShoppingBag,
 } from 'lucide-react'
+
+// Dynamic import — Mapbox GL requires browser environment (no SSR)
+const RouteMap = dynamic(() => import('./RouteMap'), { ssr: false })
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>> = {
   Landmark, Trees, Droplets, Wine, Star, Compass, Mountain, ShoppingBag,
@@ -71,10 +76,12 @@ export default function WorkspaceLayout() {
   const sectionRef = useRef<HTMLElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const beamRef = useRef<HTMLDivElement>(null)
+  const mapWrapRef = useRef<HTMLDivElement>(null)
   const addActivity = useTripStore((s) => s.addActivity)
   const days = useTripStore((s) => s.days)
   const numberOfPeople = useTripStore((s) => s.numberOfPeople)
   const getTotalPrice = useTripStore((s) => s.getTotalPrice)
+  const mapVisible = useTripStore((s) => s.mapVisible)
   const [activeActivity, setActiveActivity] = useState<Activity | null>(null)
 
   const pricing = getTotalPrice()
@@ -349,6 +356,7 @@ export default function WorkspaceLayout() {
                 <div className="glass-card rounded-2xl p-5">
                   <BudgetPanel />
                 </div>
+                <LogisticsAlerts />
                 <PackingChecklist />
               </div>
             </div>
@@ -357,6 +365,19 @@ export default function WorkspaceLayout() {
               {activeActivity && <DragPreview activity={activeActivity} />}
             </DragOverlay>
           </DndContext>
+
+          {/* Route Map — appears when user saves or fills itinerary */}
+          <div
+            ref={mapWrapRef}
+            style={{
+              opacity: mapVisible ? 1 : 0,
+              transform: mapVisible ? 'translateY(0)' : 'translateY(40px)',
+              transition: 'opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1)',
+              pointerEvents: mapVisible ? 'auto' : 'none',
+            }}
+          >
+            <RouteMap />
+          </div>
         </div>
       </div>
       </div>{/* /relative overflow-hidden workspace wrapper */}

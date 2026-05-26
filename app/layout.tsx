@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Playfair_Display, DM_Sans } from 'next/font/google'
 import './globals.css'
+import 'mapbox-gl/dist/mapbox-gl.css'
 import SmoothScroll from '@/components/ui/SmoothScroll'
 import GrainOverlay from '@/components/ui/GrainOverlay'
 

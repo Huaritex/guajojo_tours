@@ -441,3 +441,40 @@ body {
     size: letter;
   }
 }
+
+/* ── Mapbox GL overrides for dark theme ── */
+.mapboxgl-canvas {
+  outline: none !important;
+}
+
+/* Fix touch-action for mobile navigation */
+.mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate,
+.mapboxgl-canvas-container.mapboxgl-touch-drag-pan {
+  touch-action: none !important;
+}
+
+/* Fullscreen control */
+.mapboxgl-ctrl-fullscreen .mapboxgl-ctrl-icon,
+.mapboxgl-ctrl-shrink .mapboxgl-ctrl-icon {
+  filter: brightness(0) invert(0.7) sepia(1) saturate(4) hue-rotate(100deg) !important;
+}
+
+/* ── Route Map container ── */
+.route-map-container {
+  animation: routeMapSlideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes routeMapSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.route-map-header:hover {
+  background: rgba(52, 211, 153, 0.03);
+}

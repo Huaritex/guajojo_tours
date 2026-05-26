@@ -11,6 +11,7 @@ export interface Activity {
   difficulty: 1 | 2 | 3
   category: string
   icon: string
+  coordinates?: [number, number]
 }
 
 interface DaySlot {
@@ -26,9 +27,11 @@ interface SharedTripPayload {
 interface TripState {
   days: DaySlot[]
   numberOfPeople: number
+  mapVisible: boolean
   addActivity: (dayIndex: number, slot: 'morning' | 'afternoon', activity: Activity) => void
   removeActivity: (dayIndex: number, slot: 'morning' | 'afternoon') => void
   setNumberOfPeople: (n: number) => void
+  setMapVisible: (visible: boolean) => void
   getTotalPrice: () => { subtotal: number; discount: number; logistics: number; total: number; totalUSD: number }
   saveItinerary: () => void
   getShareUrl: () => string
@@ -42,6 +45,7 @@ export const useTripStore = create<TripState>((set, get) => ({
     { morning: null, afternoon: null },
   ],
   numberOfPeople: 2,
+  mapVisible: false,
 
   addActivity: (dayIndex, slot, activity) =>
     set((state) => {
@@ -62,6 +66,8 @@ export const useTripStore = create<TripState>((set, get) => ({
     }),
 
   setNumberOfPeople: (n) => set({ numberOfPeople: Math.max(1, Math.min(15, n)) }),
+
+  setMapVisible: (visible) => set({ mapVisible: visible }),
 
   getTotalPrice: () => {
     const { days, numberOfPeople } = get()
@@ -93,6 +99,8 @@ export const useTripStore = create<TripState>((set, get) => ({
     if (typeof window !== 'undefined') {
       localStorage.setItem('guajojo-itinerary', JSON.stringify(itinerary))
     }
+    // Show map when saving
+    set({ mapVisible: true })
   },
 
   getShareUrl: () => {

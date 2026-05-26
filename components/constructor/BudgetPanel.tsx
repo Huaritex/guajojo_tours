@@ -24,9 +24,16 @@ export default function BudgetPanel() {
   const printTl = useRef<gsap.core.Timeline | null>(null)
 
   function handleSave() {
-    saveItinerary()
+    saveItinerary() // also sets mapVisible: true inside the store
     setSavedFeedback(true)
     setTimeout(() => setSavedFeedback(false), 2200)
+    // Scroll to map after a brief delay for the animation to start
+    setTimeout(() => {
+      const mapEl = document.getElementById('route-map')
+      if (mapEl) {
+        mapEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 350)
   }
 
   function handleShare() {

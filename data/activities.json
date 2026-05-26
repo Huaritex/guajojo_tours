@@ -9,7 +9,8 @@
       "currency": "BOB",
       "difficulty": 1,
       "category": "cultura",
-      "icon": "Landmark"
+      "icon": "Landmark",
+      "coordinates": [-18.1822, -63.8672]
     },
     {
       "id": "amboro-day",
@@ -20,7 +21,8 @@
       "currency": "BOB",
       "difficulty": 3,
       "category": "aventura",
-      "icon": "Trees"
+      "icon": "Trees",
+      "coordinates": [-18.0580, -63.9850]
     },
     {
       "id": "cascadas",
@@ -31,7 +33,8 @@
       "currency": "BOB",
       "difficulty": 2,
       "category": "aventura",
-      "icon": "Droplets"
+      "icon": "Droplets",
+      "coordinates": [-18.2120, -63.8180]
     },
     {
       "id": "vinedos",
@@ -42,7 +45,8 @@
       "currency": "BOB",
       "difficulty": 1,
       "category": "gastronomia",
-      "icon": "Wine"
+      "icon": "Wine",
+      "coordinates": [-18.1690, -63.8510]
     },
     {
       "id": "noche-estrellas",
@@ -53,7 +57,8 @@
       "currency": "BOB",
       "difficulty": 1,
       "category": "naturaleza",
-      "icon": "Star"
+      "icon": "Star",
+      "coordinates": [-18.1640, -63.8390]
     },
     {
       "id": "cabalgata",
@@ -64,7 +69,8 @@
       "currency": "BOB",
       "difficulty": 2,
       "category": "aventura",
-      "icon": "Compass"
+      "icon": "Compass",
+      "coordinates": [-18.1910, -63.9080]
     },
     {
       "id": "cuevas",
@@ -75,7 +81,8 @@
       "currency": "BOB",
       "difficulty": 2,
       "category": "aventura",
-      "icon": "Mountain"
+      "icon": "Mountain",
+      "coordinates": [-18.2260, -63.8810]
     },
     {
       "id": "mercado-artesanal",
@@ -86,7 +93,8 @@
       "currency": "BOB",
       "difficulty": 1,
       "category": "cultura",
-      "icon": "ShoppingBag"
+      "icon": "ShoppingBag",
+      "coordinates": [-18.1784, -63.8656]
     }
   ],
   "logistics": {
